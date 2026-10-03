@@ -1,0 +1,313 @@
+<Window x:Class="SMI_Widget.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SMI Widget"
+        Width="448"
+        SizeToContent="Height"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        WindowStartupLocation="Manual"
+        FontFamily="Segoe UI"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="Grayscale">
+  <Border Padding="8" Background="Transparent">
+    <Grid>
+      <Border Margin="5,7,3,3" CornerRadius="18" Background="#55000000"/>
+      <Border x:Name="RootCard" Margin="1,1,7,9" CornerRadius="18" BorderBrush="#28FFFFFF" BorderThickness="1" Padding="14" Background="#F510141C">
+        <StackPanel>
+          <Border Height="3" Width="36" HorizontalAlignment="Left" CornerRadius="2" Background="#FF76B900" Margin="0,0,0,10"/>
+
+          <Grid x:Name="HeaderBar" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Border Width="28" Height="28" CornerRadius="8" Background="#FF76B900" Margin="0,0,10,0">
+              <TextBlock Text="S" FontWeight="Bold" Foreground="#FF10140A" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14"/>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock x:Name="GpuNameText" Text="SMI Widget" FontSize="16" FontWeight="SemiBold" Foreground="#FFF4F7FB" TextTrimming="CharacterEllipsis"/>
+              <TextBlock x:Name="SubtitleText" Text="Reading nvidia-smi…" FontSize="11" Foreground="#FF93A0B5" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+              <Button x:Name="PinButton" Content="Pin" Style="{StaticResource IconButton}" Click="Pin_Click" ToolTip="Keep the gadget on top"/>
+              <Button x:Name="TuneButton" Content="Tune" Style="{StaticResource IconButton}" Click="Tune_Click" ToolTip="Power limit, clocks, and gadget settings"/>
+              <Button x:Name="CloseButton" Content="✕" Style="{StaticResource IconButton}" Click="Hide_Click" ToolTip="Hide to tray"/>
+            </StackPanel>
+          </Grid>
+
+          <WrapPanel x:Name="GpuSwitchPanel" Margin="0,8,0,0" Visibility="Collapsed"/>
+
+          <Border x:Name="ErrorBanner" Background="#FF3A2424" BorderBrush="#FF8A4540" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,12,0,0" Visibility="Collapsed">
+            <TextBlock x:Name="ErrorText" Foreground="#FFFFC7C2" FontSize="12" TextWrapping="Wrap"/>
+          </Border>
+
+          <StackPanel x:Name="LivePanel" Margin="0,12,0,0">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <StackPanel Margin="0,0,8,0">
+                <TextBlock Text="GPU" Style="{StaticResource Label}"/>
+                <TextBlock x:Name="GpuUtilText" Text="—" Style="{StaticResource Metric}"/>
+                <Grid x:Name="GpuUtilTrack" Height="6" Margin="0,6,0,0">
+                  <Border Background="#FF2A3142" CornerRadius="3"/>
+                  <Border x:Name="GpuUtilBar" HorizontalAlignment="Left" Width="0" Height="6" CornerRadius="3" Background="#FF76B900"/>
+                </Grid>
+              </StackPanel>
+              <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                <TextBlock Text="TEMP" Style="{StaticResource Label}"/>
+                <TextBlock x:Name="TempText" Text="—" Style="{StaticResource Metric}"/>
+                <Grid x:Name="TempTrack" Height="6" Margin="0,6,0,0">
+                  <Border Background="#FF2A3142" CornerRadius="3"/>
+                  <Border x:Name="TempBar" HorizontalAlignment="Left" Width="0" Height="6" CornerRadius="3" Background="#FFFFC14D"/>
+                </Grid>
+                <TextBlock x:Name="TempHint" Text="" Style="{StaticResource Hint}"/>
+              </StackPanel>
+              <StackPanel Grid.Column="2">
+                <TextBlock Text="POWER DRAW" Style="{StaticResource Label}"/>
+                <TextBlock x:Name="PowerText" Text="—" Style="{StaticResource Metric}"/>
+                <Grid x:Name="PowerTrack" Height="6" Margin="0,6,0,0">
+                  <Border Background="#FF2A3142" CornerRadius="3"/>
+                  <Border x:Name="PowerBar" HorizontalAlignment="Left" Width="0" Height="6" CornerRadius="3" Background="#FF7AD7FF"/>
+                </Grid>
+                <TextBlock x:Name="PowerHint" Text="" Style="{StaticResource Hint}"/>
+              </StackPanel>
+            </Grid>
+
+            <Grid Margin="0,12,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              <TextBlock Text="MEMORY" Style="{StaticResource Label}"/>
+              <TextBlock x:Name="MemHint" Grid.Column="1" Text="" Style="{StaticResource Hint}" Margin="0"/>
+            </Grid>
+            <TextBlock x:Name="MemText" Text="—" Style="{StaticResource ClockValue}"/>
+            <Grid x:Name="MemTrack" Height="6" Margin="0,6,0,0">
+              <Border Background="#FF2A3142" CornerRadius="3"/>
+              <Border x:Name="MemBar" HorizontalAlignment="Left" Width="0" Height="6" CornerRadius="3" Background="#FF7AD7FF"/>
+            </Grid>
+
+            <TextBlock Text="CLOCKS" Style="{StaticResource Label}" Margin="0,12,0,0"/>
+            <UniformGrid Columns="4" Margin="0,4,0,0">
+              <StackPanel>
+                <TextBlock Text="GRAPHICS" Style="{StaticResource Label}"/>
+                <TextBlock x:Name="GfxClockText" Text="—" Style="{StaticResource ClockValue}"/>
+                <TextBlock x:Name="GfxClockHint" Text="" Style="{StaticResource Hint}"/>
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="SM" Style="{StaticResource Label}"/>
+                <TextBlock x:Name="SmClockText" Text="—" Style="{StaticResource ClockValue}"/>
+                <TextBlock x:Name="SmClockHint" Text="" Style="{StaticResource Hint}"/>
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="MEMORY" Style="{StaticResource Label}"/>
+                <TextBlock x:Name="MemClockText" Text="—" Style="{StaticResource ClockValue}"/>
+                <TextBlock x:Name="MemClockHint" Text="" Style="{StaticResource Hint}"/>
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="VIDEO" Style="{StaticResource Label}"/>
+                <TextBlock x:Name="VidClockText" Text="—" Style="{StaticResource ClockValue}"/>
+                <TextBlock x:Name="VidClockHint" Text="" Style="{StaticResource Hint}"/>
+              </StackPanel>
+            </UniformGrid>
+
+            <Grid Height="42" Margin="0,10,0,0">
+              <Canvas x:Name="HistoryCanvas"/>
+            </Grid>
+            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+              <TextBlock Text="GPU" Foreground="#FF76B900" FontSize="10" Margin="0,0,10,0"/>
+              <TextBlock Text="TEMP" Foreground="#FFFFC14D" FontSize="10" Margin="0,0,10,0"/>
+              <TextBlock Text="POWER" Foreground="#FF7AD7FF" FontSize="10"/>
+            </StackPanel>
+
+            <WrapPanel Margin="0,8,0,0">
+              <Border x:Name="StatusChip" Style="{StaticResource Pill}">
+                <TextBlock x:Name="StatusChipText" Text="Waiting" Style="{StaticResource PillText}"/>
+              </Border>
+              <Border x:Name="PStateChip" Style="{StaticResource Pill}">
+                <TextBlock x:Name="PStateText" Text="P-state —" Style="{StaticResource PillText}"/>
+              </Border>
+              <Border x:Name="FanChip" Style="{StaticResource Pill}" ToolTip="Fan speed is read-only. nvidia-smi cannot set fan curves on GeForce cards.">
+                <TextBlock x:Name="FanText" Text="Fan —" Style="{StaticResource PillText}"/>
+              </Border>
+              <Border x:Name="PcieChip" Style="{StaticResource Pill}">
+                <TextBlock x:Name="PcieText" Text="PCIe —" Style="{StaticResource PillText}"/>
+              </Border>
+              <Border x:Name="DriverChip" Style="{StaticResource Pill}">
+                <TextBlock x:Name="DriverText" Text="Driver —" Style="{StaticResource PillText}"/>
+              </Border>
+            </WrapPanel>
+
+            <Button x:Name="DetailsToggle" Content="Details" HorizontalAlignment="Left" Margin="0,4,0,0" Style="{StaticResource IconButton}" Click="Details_Click"/>
+          </StackPanel>
+
+          <ScrollViewer x:Name="DetailsScroll" Margin="0,8,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Background="Transparent" MaxHeight="460" Visibility="Collapsed">
+            <StackPanel>
+              <StackPanel x:Name="DetailsPanel" Visibility="Collapsed">
+                <TextBlock Text="Telemetry" Style="{StaticResource Section}"/>
+                <StackPanel x:Name="DetailList" Margin="0,6,0,0"/>
+                <TextBlock x:Name="ThrottleHeader" Text="Throttle reasons" Style="{StaticResource Section}" Margin="0,12,0,6"/>
+                <WrapPanel x:Name="ThrottleList"/>
+                <TextBlock x:Name="ProcessHeader" Text="Processes" Style="{StaticResource Section}" Margin="0,6,0,6"/>
+                <StackPanel x:Name="ProcessList"/>
+              </StackPanel>
+
+              <StackPanel x:Name="ControlsPanel" Visibility="Collapsed" Margin="0,4,0,0">
+                <TextBlock Text="Controls" Style="{StaticResource Section}"/>
+                <TextBlock Text="Power draw itself is live sensor data. These controls cap or lock the card through nvidia-smi. Windows asks for administrator approval only when the driver requires it." Style="{StaticResource Body}"/>
+
+                <Border Style="{StaticResource Inset}">
+                  <StackPanel x:Name="PowerSection">
+                    <Grid>
+                      <TextBlock Text="Power limit" Style="{StaticResource Section}"/>
+                      <TextBlock x:Name="PowerSliderValue" HorizontalAlignment="Right" Foreground="#FF76B900" FontWeight="SemiBold" FontFamily="Cascadia Mono, Consolas"/>
+                    </Grid>
+                    <TextBlock Text="Caps how much the card is allowed to draw." Style="{StaticResource Body}"/>
+                    <Slider x:Name="PowerSlider" Style="{StaticResource DarkSlider}" Minimum="0" Maximum="100" ValueChanged="PowerSlider_ValueChanged"/>
+                    <TextBlock x:Name="PowerRangeText" Style="{StaticResource Hint}"/>
+                    <TextBlock x:Name="PowerUnsupported" Text="This GPU did not report a min/max power range, so the limit cannot be set safely." Style="{StaticResource Body}" Visibility="Collapsed"/>
+                    <StackPanel x:Name="PowerPresetRow" Orientation="Horizontal" Margin="0,8,0,0">
+                      <Button Content="70%" Tag="0.70" Style="{StaticResource ChipButton}" Click="PowerPreset_Click" ToolTip="70% of the default limit"/>
+                      <Button Content="85%" Tag="0.85" Style="{StaticResource ChipButton}" Click="PowerPreset_Click"/>
+                      <Button Content="Default" Tag="default" Style="{StaticResource ChipButton}" Click="PowerPreset_Click"/>
+                      <Button Content="Max" Tag="max" Style="{StaticResource ChipButton}" Click="PowerPreset_Click"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                      <Button x:Name="ApplyPowerButton" Content="Apply limit" Style="{StaticResource AccentButton}" Click="ApplyPower_Click"/>
+                      <Button x:Name="ResetPowerButton" Content="Reset" Style="{StaticResource IconButton}" Click="ResetPower_Click"/>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Inset}">
+                  <StackPanel>
+                    <TextBlock Text="Graphics clock lock" Style="{StaticResource Section}"/>
+                    <TextBlock Text="Set min and max equal to hold one frequency. Unlock restores boost." Style="{StaticResource Body}"/>
+                    <TextBlock x:Name="GpuClockRangeText" Style="{StaticResource Hint}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                      <TextBox x:Name="GpuClockMinBox" Style="{StaticResource DarkBox}" ToolTip="Minimum MHz"/>
+                      <TextBox x:Name="GpuClockMaxBox" Style="{StaticResource DarkBox}" ToolTip="Maximum MHz"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                      <Button Content="Lock" Style="{StaticResource AccentButton}" Click="LockGpuClocks_Click"/>
+                      <Button Content="Use current" Style="{StaticResource IconButton}" Click="UseCurrentGpuClock_Click"/>
+                      <Button Content="Unlock" Style="{StaticResource IconButton}" Click="UnlockGpuClocks_Click"/>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Inset}">
+                  <StackPanel>
+                    <TextBlock Text="Memory clock lock" Style="{StaticResource Section}"/>
+                    <TextBlock Text="Not supported on every GeForce card. nvidia-smi will say so if this GPU refuses it." Style="{StaticResource Body}"/>
+                    <TextBlock x:Name="MemClockRangeText" Style="{StaticResource Hint}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                      <TextBox x:Name="MemClockMinBox" Style="{StaticResource DarkBox}" ToolTip="Minimum MHz"/>
+                      <TextBox x:Name="MemClockMaxBox" Style="{StaticResource DarkBox}" ToolTip="Maximum MHz"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                      <Button Content="Lock" Style="{StaticResource AccentButton}" Click="LockMemClocks_Click"/>
+                      <Button Content="Use current" Style="{StaticResource IconButton}" Click="UseCurrentMemClock_Click"/>
+                      <Button Content="Unlock" Style="{StaticResource IconButton}" Click="UnlockMemClocks_Click"/>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+
+                <Border x:Name="AppClocksPanel" Style="{StaticResource Inset}" Visibility="Collapsed">
+                  <StackPanel>
+                    <TextBlock Text="Applications clocks" Style="{StaticResource Section}"/>
+                    <TextBlock Text="Memory clock first, then graphics. Order matches nvidia-smi -ac." Style="{StaticResource Body}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                      <TextBox x:Name="AppMemBox" Style="{StaticResource DarkBox}" ToolTip="Memory MHz"/>
+                      <TextBox x:Name="AppGfxBox" Style="{StaticResource DarkBox}" ToolTip="Graphics MHz"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                      <Button Content="Apply" Style="{StaticResource AccentButton}" Click="ApplyAppClocks_Click"/>
+                      <Button Content="Reset" Style="{StaticResource IconButton}" Click="ResetAppClocks_Click"/>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+
+                <Border x:Name="TargetTempPanel" Style="{StaticResource Inset}" Visibility="Collapsed">
+                  <StackPanel>
+                    <Grid>
+                      <TextBlock Text="GPU target temperature" Style="{StaticResource Section}"/>
+                      <TextBlock x:Name="TargetTempValue" HorizontalAlignment="Right" Foreground="#FFFFC14D" FontWeight="SemiBold"/>
+                    </Grid>
+                    <TextBlock Text="Changes the boost and fan target on cards that support nvidia-smi -gtt." Style="{StaticResource Body}"/>
+                    <Slider x:Name="TargetTempSlider" Style="{StaticResource DarkSlider}" ValueChanged="TargetTempSlider_ValueChanged"/>
+                    <TextBlock x:Name="TargetTempRangeText" Style="{StaticResource Hint}"/>
+                    <Button Content="Apply target" Style="{StaticResource AccentButton}" Margin="0,8,0,0" HorizontalAlignment="Left" Click="ApplyTargetTemp_Click"/>
+                  </StackPanel>
+                </Border>
+
+                <Border x:Name="PersistencePanel" Style="{StaticResource Inset}" Visibility="Collapsed">
+                  <StackPanel>
+                    <TextBlock Text="Persistence mode" Style="{StaticResource Section}"/>
+                    <TextBlock x:Name="PersistenceStateText" Style="{StaticResource Body}"/>
+                    <TextBlock Text="Keeps the driver loaded. Usually unsupported on Windows GeForce." Style="{StaticResource Body}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                      <Button Content="On" Style="{StaticResource ChipButton}" Click="PersistenceOn_Click"/>
+                      <Button Content="Off" Style="{StaticResource ChipButton}" Click="PersistenceOff_Click"/>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+
+                <Border x:Name="ComputePanel" Style="{StaticResource Inset}" Visibility="Collapsed">
+                  <StackPanel>
+                    <TextBlock Text="Compute mode" Style="{StaticResource Section}"/>
+                    <TextBlock x:Name="ComputeStateText" Style="{StaticResource Body}"/>
+                    <TextBlock Text="Exclusive modes are mainly for datacenter and TCC drivers." Style="{StaticResource Body}"/>
+                    <WrapPanel Margin="0,8,0,0">
+                      <Button Content="Default" Tag="0" Style="{StaticResource ChipButton}" Margin="0,0,6,6" Click="ComputeMode_Click"/>
+                      <Button Content="Exclusive process" Tag="3" Style="{StaticResource ChipButton}" Margin="0,0,6,6" Click="ComputeMode_Click"/>
+                      <Button Content="Exclusive thread" Tag="1" Style="{StaticResource ChipButton}" Margin="0,0,6,6" Click="ComputeMode_Click"/>
+                      <Button Content="Prohibited" Tag="2" Style="{StaticResource ChipButton}" Margin="0,0,6,6" Click="ComputeMode_Click"/>
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Inset}">
+                  <StackPanel>
+                    <TextBlock Text="Gadget" Style="{StaticResource Section}"/>
+                    <ToggleButton x:Name="StartupToggle" Content="Start with Windows" Style="{StaticResource ChipToggle}" Margin="0,8,0,0" HorizontalAlignment="Left" Checked="StartupToggle_Changed" Unchecked="StartupToggle_Changed"/>
+                    <TextBlock Text="Refresh" Style="{StaticResource Label}" Margin="0,10,0,6"/>
+                    <StackPanel x:Name="RefreshPanel" Orientation="Horizontal">
+                      <Button Content="0.5s" Tag="500" Style="{StaticResource ChipButton}" Click="Refresh_Click"/>
+                      <Button Content="1s" Tag="1000" Style="{StaticResource ChipButton}" Click="Refresh_Click"/>
+                      <Button Content="2s" Tag="2000" Style="{StaticResource ChipButton}" Click="Refresh_Click"/>
+                      <Button Content="5s" Tag="5000" Style="{StaticResource ChipButton}" Click="Refresh_Click"/>
+                    </StackPanel>
+                    <Grid Margin="0,10,0,0">
+                      <TextBlock Text="Card opacity" Style="{StaticResource Label}"/>
+                      <TextBlock x:Name="OpacityValue" HorizontalAlignment="Right" Style="{StaticResource Hint}" Margin="0"/>
+                    </Grid>
+                    <Slider x:Name="OpacitySlider" Style="{StaticResource DarkSlider}" Minimum="0.78" Maximum="1" Value="0.96" ValueChanged="OpacitySlider_ValueChanged"/>
+                    <TextBlock Text="Pin keeps the gadget above other windows. The X hides it in the tray." Style="{StaticResource Body}"/>
+                    <Button x:Name="ExitButton" Content="Exit widget" Style="{StaticResource IconButton}" Margin="0,8,0,0" HorizontalAlignment="Left" Click="Exit_Click"/>
+                  </StackPanel>
+                </Border>
+
+                <TextBlock x:Name="CommandStatus" Margin="0,8,0,0" Foreground="#FF93A0B5" FontSize="11" TextWrapping="Wrap"
+                           Text="Changes go through nvidia-smi. Approve the administrator prompt if Windows shows one."/>
+              </StackPanel>
+            </StackPanel>
+          </ScrollViewer>
+
+          <TextBlock x:Name="UpdatedText" Margin="0,8,0,0" Foreground="#FF6E788C" FontSize="10" Text=""/>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Border>
+</Window>
